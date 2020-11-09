@@ -1,0 +1,45 @@
+function calliTunes() {
+  var app = SpreadsheetApp;
+  
+  //Select the artist
+  var range = app.getActiveSpreadsheet().getSheets()[0].getRange('A5');
+  SpreadsheetApp.setCurrentCell(range);  
+  var cell = SpreadsheetApp.getSelection();
+  var artist = cell.getCurrentCell().getDisplayValue();
+  
+  //Clear the previous data
+  var fullRange = app.getActiveSpreadsheet().getSheetByName("Sheet1").getRange('B5:E25');
+  fullRange.clearContent();
+  
+
+ //Call the iTunes API
+  var response = UrlFetchApp.fetch("https://itunes.apple.com/search?term=" + artist);
+  
+  
+ //Parse the JSON reply
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+  
+  //Grab the first 25 results for the selected artist
+  
+  for (i = 0; i<=20; i++) {
+    
+    //Parse the JSON response for album name, track name, artwork URL and track preview URL
+    var album = data["results"][i]["collectionName"];
+    var trackName = data["results"][i]["trackName"];
+    var trackPreview = data["results"][i]["trackViewUrl"];
+    var artworkUrl = data["results"][i]["artworkUrl100"];
+    
+    //Set the cells to be updated with each piece of data
+    var targetAlbumRange = app.getActiveSpreadsheet().getSheetByName("Sheet1").getRange(i+5, 2);
+    var targetSongRange = app.getActiveSpreadsheet().getSheetByName("Sheet1").getRange(i+5, 3);
+    var targetArtworkRange = app.getActiveSpreadsheet().getSheetByName("Sheet1").getRange(i+5, 4);
+    var targetPreviewRange = app.getActiveSpreadsheet().getSheetByName("Sheet1").getRange(i+5, 5);
+    
+    //Set the cell values
+    targetAlbumRange.setValue(album);
+    targetSongRange.setValue(trackName);
+    targetArtworkRange.setValue(artworkUrl);
+    targetPreviewRange.setValue(trackPreview);
+  }
+}
